@@ -6,6 +6,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
+import java.util.ArrayList;
+
 import zhy.com.highlight.HighLight;
 import zhy.com.highlight.position.OnBottomPosCallback;
 import zhy.com.highlight.position.OnLeftPosCallback;
@@ -39,14 +41,37 @@ public class MainActivity extends AppCompatActivity
 //        );
 
     }
+
+    public void initView(){
+        mHightLight = new HighLight(MainActivity.this).anchor(findViewById(R.id.id_container));
+
+        ArrayList<HighLight.ViewPosInfo> list =new ArrayList<>();
+        mHightLight.addHighLightToList(list , R.id.btn_rightLight,R.layout.info_gravity_left_down,new OnLeftPosCallback(45),new RectLightShape());
+        mHightLight.addHighLightToList(list, R.id.btn_light,R.layout.info_gravity_left_down,new OnRightPosCallback(5),new CircleLightShape());
+        mHightLight.addViewInfoToList(list);
+
+        ArrayList<HighLight.ViewPosInfo> list1 =new ArrayList<>();
+        mHightLight.addHighLightToList(list1, R.id.btn_light,R.layout.info_gravity_left_down,new OnRightPosCallback(5),new CircleLightShape());
+        mHightLight.addHighLightToList(list1, R.id.btn_bottomLight,R.layout.info_gravity_left_down,new OnTopPosCallback(),new CircleLightShape());
+        mHightLight.addViewInfoToList(list1);
+
+        ArrayList<HighLight.ViewPosInfo> list2 =new ArrayList<>();
+        mHightLight.addHighLightToList(list2 , R.id.btn_rightLight,R.layout.info_gravity_left_down,new OnLeftPosCallback(45),new RectLightShape());
+        mHightLight.addHighLightToList(list2, R.id.btn_light,R.layout.info_gravity_left_down,new OnRightPosCallback(5),new CircleLightShape());
+        mHightLight.addHighLightToList(list2, R.id.btn_bottomLight,R.layout.info_gravity_left_down,new OnTopPosCallback(),new CircleLightShape());
+        mHightLight.addViewInfoToList(list2);
+    }
     public  void showTipView(View view){
-        mHightLight = new HighLight(MainActivity.this)//
-                .anchor(findViewById(R.id.id_container))//如果是Activity上增加引导层，不需要设置anchor
-                .addHighLight(R.id.btn_rightLight,R.layout.info_gravity_left_down,new OnLeftPosCallback(45),new RectLightShape())
-                .addHighLight(R.id.btn_light,R.layout.info_gravity_left_down,new OnRightPosCallback(5),new CircleLightShape())
-                .addHighLight(R.id.btn_bottomLight,R.layout.info_gravity_left_down,new OnTopPosCallback(),new CircleLightShape())
-                .addHighLight(view,R.layout.info_gravity_left_down,new OnBottomPosCallback(60),new CircleLightShape());
-        mHightLight.show();
+//        mHightLight = new HighLight(MainActivity.this)//
+//                .anchor(findViewById(R.id.id_container))//如果是Activity上增加引导层，不需要设置anchor
+//                .addHighLight(R.id.btn_rightLight,R.layout.info_gravity_left_down,new OnLeftPosCallback(45),new RectLightShape())
+//                .addHighLight(R.id.btn_light,R.layout.info_gravity_left_down,new OnRightPosCallback(5),new CircleLightShape())
+//                .addHighLight(R.id.btn_bottomLight,R.layout.info_gravity_left_down,new OnTopPosCallback(),new CircleLightShape())
+//                .addHighLight(view,R.layout.info_gravity_left_down,new OnBottomPosCallback(60),new CircleLightShape());
+//        mHightLight.show();
+
+        initView();
+        mHightLight.showStart();
     }
     private void showTipMask()
     {
@@ -122,7 +147,7 @@ public class MainActivity extends AppCompatActivity
 
     public void add(View view)
     {
-        mHightLight.show();
+        mHightLight.showStart();
     }
 
 

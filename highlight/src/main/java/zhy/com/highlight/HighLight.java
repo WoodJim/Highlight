@@ -10,6 +10,7 @@ import android.widget.FrameLayout;
 import android.widget.RelativeLayout;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import zhy.com.highlight.shape.RectLightShape;
@@ -103,6 +104,44 @@ public class HighLight
         return this;
     }
 
+    /**
+     * 添加需要显示的HightLight信息
+     * @param infos  每个步骤需要显示的HightLight信息
+     * @param viewId
+     * @param decorLayoutId
+     * @param onPosCallback
+     * @param lightShape
+     */
+    public void addHighLightToList(List<ViewPosInfo> infos, int viewId, int decorLayoutId, OnPosCallback onPosCallback, LightShape lightShape){
+        ViewGroup parent = (ViewGroup) mAnchor;
+        View view = parent.findViewById(viewId);
+        addHighLightToList(infos,view, decorLayoutId, onPosCallback,lightShape);
+    }
+
+    public void addHighLightToList(List<ViewPosInfo> viewPosInfos, View view, int decorLayoutId,
+                                   OnPosCallback onPosCallback, LightShape lightShape) {
+        ViewGroup parent = (ViewGroup) mAnchor;
+        RectF rect = new RectF(ViewUtils.getLocationInView(parent, view));
+        ViewPosInfo viewPosInfo = new ViewPosInfo();
+        viewPosInfo.layoutId = decorLayoutId;
+        viewPosInfo.rectF = rect;
+        viewPosInfo.view = view;
+        if (onPosCallback == null && decorLayoutId != -1) {
+            throw new IllegalArgumentException("onPosCallback can not be null.");
+        }
+        MarginInfo marginInfo = new MarginInfo();
+        onPosCallback.getPos(parent.getWidth() - rect.right, parent.getHeight() - rect.bottom, rect, marginInfo);
+        viewPosInfo.marginInfo = marginInfo;
+        viewPosInfo.onPosCallback = onPosCallback;
+        viewPosInfo.lightShape = lightShape == null ? new RectLightShape() : lightShape;
+        if (viewPosInfos == null) {
+            viewPosInfos = new ArrayList<>();
+        }
+        viewPosInfos.add(viewPosInfo);
+
+    }
+
+
     public void updateInfo()
     {
         ViewGroup parent = (ViewGroup) mAnchor;
@@ -142,6 +181,51 @@ public class HighLight
         return this;
     }
 
+    private List<List<ViewPosInfo>> mViewRectsList; //存储所有需要显示的高亮的信息，每一个Item 就是一次需要显示的
+
+    /**
+     * 将每个步骤需要显示的列表加入到总列表中
+     * @param viewPosInfoList
+     * @param position  第几步需要显示的信息
+     */
+    public void addViewInfoToList(List<ViewPosInfo> viewPosInfoList, int position){
+
+        if(mViewRectsList == null){
+            mViewRectsList = new LinkedList<>();
+        }
+
+        if(viewPosInfoList == null){
+            return;
+        }
+
+        int length = mViewRectsList.size();
+        if( position >=0 && position < length){
+            mViewRectsList.add(position, viewPosInfoList);
+        }else{
+            mViewRectsList.add(viewPosInfoList);
+        }
+
+    }
+
+    public void addViewInfoToList(List<ViewPosInfo> viewPosInfoList){
+
+        if(mViewRectsList == null){
+            mViewRectsList = new LinkedList<>();
+        }
+        if(viewPosInfoList == null){
+            return;
+        }
+        mViewRectsList.add(viewPosInfoList);
+    }
+    //添加每一步骤需要高亮显示的View
+    public HighLight addHightLightByViewInfo(List<ViewPosInfo> viewPosInfos){
+        if(mViewRects != null){
+            mViewRects.clear();
+            mViewRects.addAll(viewPosInfos);
+        }
+        return this;
+    }
+
     // 一个场景可能有多个步骤的高亮。一个步骤完成之后再进行下一个步骤的高亮
     // 添加点击事件，将每次点击传给应用逻辑
     public HighLight setClickCallback(OnClickCallback clickCallback){
@@ -150,7 +234,22 @@ public class HighLight
     }
 
 
-    public void show()
+    public void showStart(){
+        if(mViewRects != null){
+            mViewRects.clear();
+        }
+
+        if(mViewRects == null){
+            mViewRects = new ArrayList<>();
+        }
+        if(mViewRectsList !=null && mViewRectsList.size() > 0){
+            mViewRects.addAll(mViewRectsList.get(0));
+        }
+
+        show();
+    }
+
+    private void show()
     {
 
         if (mHightLightView != null) return;
@@ -182,7 +281,17 @@ public class HighLight
                 @Override
                 public void onClick(View v)
                 {
-                    remove();
+                    if(mViewRectsList != null && mViewRectsList.size() > 0){
+                        mViewRectsList.remove(0);
+                    }
+                    if(mViewRectsList != null && mViewRectsList.size() > 0){
+                        addHightLightByViewInfo(mViewRectsList.get(0));
+                        remove();
+                        show();
+                    }else{
+                        remove();
+                        mViewRectsList = null;
+                    }
                     if(clickCallback != null){
                         clickCallback.onClick();
                     }
